@@ -1,0 +1,7 @@
+free_thresh: 0.90
+negate: 0
+origin: [-6.000000, -6.000000, 0.0]
+resolution: 0.010000
+mode: trinary
+occupied_thresh: 0.95
+image: /home/user/Human_aware_Navigation/src/robot_gazebo/maps/HNmap/HNmap.pgm
