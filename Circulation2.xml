@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<scenario>
+
+    <obstacle x1="-0.06" y1="0.21" x2="-0.06" y2="-2.54" />
+    <obstacle x1="-0.06" y1="-2.54" x2="2.19" y2="-2.54" />
+    <obstacle x1="2.19" y1="-2.54" x2="2.19" y2="0.21" />
+    <obstacle x1="2.19" y1="0.21" x2="-0.06" y2="0.21" />
+    <obstacle x1="-3.61" y1="2.66" x2="-3.61" y2="-1.34" />
+    <obstacle x1="-3.61" y1="-1.34" x2="-1.61" y2="-1.34" />
+    <obstacle x1="-1.61" y1="-1.34" x2="-1.61" y2="2.66" />
+    <obstacle x1="-1.61" y1="2.66" x2="-3.61" y2="2.66" />
+    <obstacle x1="-5.85" y1="5.35" x2="5.85" y2="5.34" />
+    <obstacle x1="5.85" y1="5.34" x2="5.84" y2="2.65" />
+    <obstacle x1="5.84" y1="2.65" x2="2.02" y2="2.65" />
+    <obstacle x1="2.02" y1="2.65" x2="2.02" y2="2.5" />
+    <obstacle x1="2.02" y1="2.5" x2="5.85" y2="2.49" />
+    <obstacle x1="5.85" y1="2.49" x2="5.85" y2="0.35" />
+    <obstacle x1="5.85" y1="0.35" x2="3.99" y2="0.33" />
+    <obstacle x1="3.99" y1="0.33" x2="3.98" y2="-5.36" />
+    <obstacle x1="3.98" y1="-5.36" x2="-5.86" y2="-5.35" />
+    <obstacle x1="-5.86" y1="-5.35" x2="-5.85" y2="5.35" />
+    <obstacle x1="-6.0" y1="5.5" x2="-6.0" y2="-5.51" />
+    <obstacle x1="-6.0" y1="-5.51" x2="6.0" y2="-5.5" />
+    <obstacle x1="6.0" y1="-5.5" x2="5.99" y2="5.5" />
+    <obstacle x1="5.99" y1="5.5" x2="-6.0" y2="5.5" />
+
+
+    <waypoint id="wp_1" x="-4.38" y="2.54" r="0.8" />
+    <waypoint id="wp_2" x="-4.5" y="-3.69" r="0.8" />
+    <waypoint id="wp_3" x="-0.73" y="-3.69" r="0.8" />  
+    <waypoint id="wp_4" x="-0.5" y="1.37" r="0.8" />
+    <waypoint id="wp_5" x="-0.7" y="3.4" r="0.8" />
+    <waypoint id="wp_6" x="3.39" y="1.0" r="0.8" />
+    <waypoint id="wp_7" x="3.13" y="-3.3" r="0.8" />
+
+
+
+<!-- wide Circulation 1,2,7,6,5 or reverse-->
+    <agent x="-4.48" y="-1.15" n="1" dx="0" dy="0" type="0">
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_1" />
+    </agent>
+
+    <agent x="1.05" y="1.95" n="1" dx="0" dy="0" type="0">
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+    </agent>
+
+    <agent x="1.13" y="-3.53" n="1" dx="0" dy="0" type="0">
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_2" />
+    </agent>
+
+<!-- wide reverse Circulation 6,7,2,1,5 -->
+
+    <agent x="-2.85" y="3.89" n="1" dx="0" dy="0" type="0">
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_1" />
+    </agent>
+
+    
+
+<!-- small Circulation 4,3,7,6 -->
+
+    <agent x="3.28" y="-0.78" n="1" dx="0" dy="0" type="0">
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+    </agent>
+<!-- small Circulatio reverse 7,3,4,6 -->
+
+    <agent x="-0.61" y="-1.0" n="1" dx="0" dy="0" type="0">
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+    </agent>
+
+</scenario>

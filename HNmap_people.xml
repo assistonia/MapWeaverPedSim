@@ -24,43 +24,110 @@
     <obstacle x1="6.0" y1="-5.5" x2="5.99" y2="5.5" />
     <obstacle x1="5.99" y1="5.5" x2="-6.0" y2="5.5" />
 
+    <waypoint id="wp_1" x="-0.693" y="0.979" r="0.8" />
+    <waypoint id="wp_2" x="-0.879" y="-0.522" r="0.8" />
+    <waypoint id="wp_3" x="-0.815" y="-1.128" r="0.8" />
+    <waypoint id="wp_4" x="-0.828" y="-2.342" r="0.8" />
+    <waypoint id="wp_5" x="0.714" y="-3.102" r="0.8" />
+    <waypoint id="wp_6" x="2.174" y="-3.118" r="0.8" />
+    <waypoint id="wp_7" x="2.789" y="-2.596" r="0.8" />
+    <waypoint id="wp_8" x="2.866" y="-1.725" r="0.8" />
+    <waypoint id="wp_9" x="2.898" y="-0.262" r="0.8" />
+    <waypoint id="wp_10" x="3.055" y="1.059" r="0.8" />
+    <waypoint id="wp_11" x="1.161" y="0.771" r="0.8" />
+    <waypoint id="wp_12" x="-2.199" y="4.082" r="0.8" />
+    <waypoint id="wp_13" x="-0.742" y="2.944" r="0.8" />
 
-    <waypoint id="wp_1" x="4" y="4" r="0.8" />
-    <waypoint id="wp_2" x="0" y="4" r="0.8" />
-    <waypoint id="wp_3" x="-4" y="4" r="0.8" />
-    <waypoint id="wp_4" x="-4.7" y="2" r="0.8" />
-    <waypoint id="wp_5" x="0" y="2" r="0.8" />
-    <waypoint id="wp_6" x="3.05" y="1.33" r="0.8" />
-
-    <waypoint id="wp_7" x="-4.7" y="-2" r="0.8" />
-    <waypoint id="wp_8" x="-1" y="-2" r="0.8" />
-    <waypoint id="wp_9" x="-4.7" y="-4" r="0.8" />
-    <waypoint id="wp_10" x="-1" y="-4" r="0.8" />
-    <waypoint id="wp_11" x="3" y="-4" r="0.8" />
-
-
-
-    <agent x="4" y="4" n="1" dx="0" dy="0" type="0">
+    <!-- Group 1: Clockwise movement -->
+    <agent x="-0.693" y="0.979" n="1" dx="0" dy="0" type="0" speed="0.4">
         <addwaypoint id="wp_1" />
         <addwaypoint id="wp_2" />
-        <addwaypoint id="wp_5" />
-        <addwaypoint id="wp_6" />
-        <addwaypoint id="wp_11" />
-    </agent>
-
-    <agent x="-4" y="4" n="1" dx="0" dy="0" type="0">
+        <addwaypoint id="wp_3" />
         <addwaypoint id="wp_4" />
-        <addwaypoint id="wp_7" />
-        <addwaypoint id="wp_10" />
-        <addwaypoint id="wp_11" />
+        <addwaypoint id="wp_5" />
         <addwaypoint id="wp_6" />
     </agent>
 
-    <agent x="-1" y="-4" n="1" dx="0" dy="0" type="0">
+    <agent x="2.174" y="-3.118" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
         <addwaypoint id="wp_8" />
+        <addwaypoint id="wp_9" />
+        <addwaypoint id="wp_10" />
+        <addwaypoint id="wp_1" />
+    </agent>
+
+    <agent x="2.898" y="-0.462" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_9" />
+        <addwaypoint id="wp_10" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_4" />
+    </agent>
+
+    <agent x="-0.815" y="-1.128" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_4" />
         <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_8" />
+    </agent>
+
+    <agent x="2.866" y="-1.725" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_8" />
+        <addwaypoint id="wp_9" />
+        <addwaypoint id="wp_10" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_3" />
+    </agent>
+
+    <!-- Group 2: Counter-clockwise movement -->
+    <agent x="3.055" y="1.059" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_10" />
+        <addwaypoint id="wp_9" />
+        <addwaypoint id="wp_8" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_5" />
+    </agent>
+
+    <agent x="1.161" y="0.771" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_11" />
+        <addwaypoint id="wp_10" />
+        <addwaypoint id="wp_9" />
+        <addwaypoint id="wp_8" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+    </agent>
+
+    <agent x="-0.879" y="-0.522" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_11" />
+        <addwaypoint id="wp_10" />
+        <addwaypoint id="wp_9" />
+        <addwaypoint id="wp_8" />
+    </agent>
+
+    <agent x="0.714" y="-3.102" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_2" />
+        <addwaypoint id="wp_1" />
+        <addwaypoint id="wp_11" />
+    </agent>
+
+    <agent x="2.789" y="-2.596" n="1" dx="0" dy="0" type="0" speed="0.4">
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_5" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
         <addwaypoint id="wp_2" />
     </agent>
-
 
 </scenario>

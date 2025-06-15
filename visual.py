@@ -140,6 +140,6 @@ if __name__ == '__main__':
     else:
         print("사용법: python visual.py <xml_file_path>")
         # 기본 파일로 실행 (예시)
-        print("기본 예시 파일 'new_25_v1.xml'로 실행합니다.")
-        default_xml_file = 'new_25_v1.xml' # 또는 HNmap_people.xml 등 테스트하고 싶은 파일
+        print("기본 예시 파일 'Congestion1.xml'로 실행합니다.")
+        default_xml_file = 'HNmap_people.xml' # 또는 HNmap_people.xml 등 테스트하고 싶은 파일
         draw_scenario_from_xml(default_xml_file)
