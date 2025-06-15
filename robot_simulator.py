@@ -175,6 +175,33 @@ class RobotSimulator:
         self.stuck_count = 0
         self.last_pos = [3, -4]
         
+        # CCTV 커버리지 영역 정의
+        self.cctv_coverage = [
+            {
+                'name': 'CCTV1',
+                'points': [(-5.6, -1.6), (-0.15, -5.2)],
+                'color': 'lightgreen'
+            },
+            {
+                'name': 'CCTV2',
+                'points': [(-1.5, 2.0), (-0.15, -5.2)],
+                'color': 'gold'
+            },
+            {
+                'name': 'CCTV3',
+                'points': [(2.4, 1.51), (3.8, -5.21)],
+                'color': 'lightcoral'
+            }
+        ]
+        
+        # Individual Space 맵 초기화
+        self.is_map = np.zeros((120, 120))
+        
+        # 시각화를 위한 figure 초기화
+        plt.ion()  # 대화형 모드 활성화
+        self.fig1 = plt.figure(1, figsize=(8, 8))  # 메인 시뮬레이션 창
+        self.fig2 = plt.figure(2, figsize=(8, 8))  # Individual Space 창
+
     def load_agents(self, xml_file):
         tree = ET.parse(xml_file)
         root = tree.getroot()
@@ -326,23 +353,83 @@ class RobotSimulator:
         # 현재 위치 저장
         self.last_pos = self.robot_pos.copy()
 
+    def calculate_individual_space(self, agent_pos, agent_vel):
+        # 속도에 따른 분산 계산
+        speed = np.sqrt(agent_vel[0]**2 + agent_vel[1]**2)
+        sigma_h = max(2 * speed, 0.5)
+        sigma_s = (2/3) * sigma_h
+        sigma_r = (1/2) * sigma_h
+        
+        # 방향 계산
+        theta = np.arctan2(agent_vel[1], agent_vel[0])
+        
+        # 그리드 상의 모든 점에 대해 개인 공간 계산
+        for i in range(120):
+            for j in range(120):
+                x = (j * self.grid_size) - 6
+                y = (i * self.grid_size) - 6
+                
+                # 에이전트와의 상대 위치
+                dx = x - agent_pos[0]
+                dy = y - agent_pos[1]
+                
+                # 전방/후방 판별
+                dot_product = dx * np.cos(theta) + dy * np.sin(theta)
+                sigma = sigma_h if dot_product > 0 else sigma_r
+                
+                # A, B, C 계수 계산
+                A = (np.cos(theta)**2)/(2*sigma**2) + (np.sin(theta)**2)/(2*sigma_s**2)
+                B = (np.sin(2*theta))/(4*sigma**2) - (np.sin(2*theta))/(4*sigma_s**2)
+                C = (np.sin(theta)**2)/(2*sigma**2) + (np.cos(theta)**2)/(2*sigma_s**2)
+                
+                # 개인 공간 값 계산
+                is_value = np.exp(-(A*dx**2 + 2*B*dx*dy + C*dy**2))
+                self.is_map[i, j] = max(self.is_map[i, j], is_value)
+    
+    def is_in_cctv_coverage(self, pos):
+        for cctv in self.cctv_coverage:
+            x1, y1 = cctv['points'][0]
+            x2, y2 = cctv['points'][1]
+            if (min(x1, x2) <= pos[0] <= max(x1, x2) and 
+                min(y1, y2) <= pos[1] <= max(y1, y2)):
+                return True
+        return False
+    
     def update(self):
-        # 에이전트 업데이트
+        # Individual Space 맵 초기화
+        self.is_map = np.zeros((120, 120))
+        
+        # 에이전트 업데이트 및 Individual Space 계산
         for agent in self.agents:
+            if not agent.finished and self.is_in_cctv_coverage(agent.pos):
+                # 에이전트의 속도 계산 (이전 위치와의 차이)
+                velocity = [agent.pos[0] - agent.last_pos[0], 
+                          agent.pos[1] - agent.last_pos[1]]
+                self.calculate_individual_space(agent.pos, velocity)
             agent.update(self.agents, self.obstacles)
         
         # 로봇 업데이트
         self.update_robot()
-
+    
     def visualize(self, path=None):
+        # 메인 시뮬레이션 창
+        plt.figure(1)
         plt.clf()
+        
+        # CCTV 커버리지 영역 그리기
+        for cctv in self.cctv_coverage:
+            x1, y1 = cctv['points'][0]
+            x2, y2 = cctv['points'][1]
+            plt.fill([x1, x2, x2, x1], [y1, y1, y2, y2], color=cctv['color'], alpha=0.3)
+            plt.text((x1 + x2)/2, (y1 + y2)/2, cctv['name'], ha='center', va='center')
+        
         # 장애물 그리기
         for obs in self.obstacles:
             plt.plot([obs[0][0], obs[1][0]], [obs[0][1], obs[1][1]], 'k-', linewidth=2)
         
         # 에이전트 그리기
         for agent in self.agents:
-            color = agent.visualize()  # 에이전트 상태에 따른 색상
+            color = agent.visualize()
             circle = plt.Circle(agent.pos, agent.radius, color=color, alpha=0.5)
             plt.gca().add_patch(circle)
         
@@ -359,6 +446,35 @@ class RobotSimulator:
         plt.axis('equal')
         plt.xlim(-6, 6)
         plt.ylim(-6, 6)
+        plt.title('Robot Simulation')
+        
+        # Individual Space 창
+        plt.figure(2)
+        plt.clf()
+        
+        # Individual Space 맵 표시
+        plt.imshow(self.is_map, extent=[-6, 6, -6, 6], origin='lower', 
+                  cmap='YlOrRd', alpha=0.7)
+        
+        # CCTV 커버리지 영역을 검은색 박스로 표시
+        for cctv in self.cctv_coverage:
+            x1, y1 = cctv['points'][0]
+            x2, y2 = cctv['points'][1]
+            plt.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], 'k-', linewidth=2)
+            plt.text((x1 + x2)/2, (y1 + y2)/2, cctv['name'], ha='center', va='center', 
+                    color='black', bbox=dict(facecolor='white', alpha=0.7))
+        
+        # 장애물 표시
+        for obs in self.obstacles:
+            plt.plot([obs[0][0], obs[1][0]], [obs[0][1], obs[1][1]], 'k-', linewidth=2)
+        
+        plt.colorbar(label='Individual Space Value')
+        plt.grid(True)
+        plt.axis('equal')
+        plt.xlim(-6, 6)
+        plt.ylim(-6, 6)
+        plt.title('Individual Space Map')
+        
         plt.draw()
         plt.pause(0.01)
 
@@ -394,6 +510,7 @@ def main():
             print("올바른 숫자를 입력해주세요.")
         except KeyboardInterrupt:
             print("\n프로그램을 종료합니다.")
+            plt.close('all')  # 모든 창 닫기
             break
 
 if __name__ == "__main__":
