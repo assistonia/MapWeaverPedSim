@@ -365,14 +365,36 @@ class RobotSimulator:
 def main():
     simulator = RobotSimulator("Circulation1.xml")
     
-    # 목표 지점 설정 (예: (4, 4))
-    simulator.move_robot([4, 4])
-    
-    # 시뮬레이션 루프
     while True:
-        simulator.update()
-        simulator.visualize()
-        time.sleep(0.1)
+        try:
+            # 사용자로부터 목표 위치 입력 받기
+            x = float(input("목표 x 좌표를 입력하세요 (-6 ~ 6): "))
+            y = float(input("목표 y 좌표를 입력하세요 (-6 ~ 6): "))
+            
+            # 좌표 범위 체크
+            if not (-6 <= x <= 6 and -6 <= y <= 6):
+                print("좌표는 -6에서 6 사이여야 합니다.")
+                continue
+                
+            # 로봇 이동
+            simulator.move_robot([x, y])
+            
+            # 시뮬레이션 루프
+            while True:
+                simulator.update()
+                simulator.visualize()
+                time.sleep(0.1)
+                
+                # 목표에 도달했는지 확인
+                if np.sqrt((simulator.robot_pos[0] - x)**2 + (simulator.robot_pos[1] - y)**2) < 0.2:
+                    print(f"목표 지점 ({x}, {y})에 도달했습니다!")
+                    break
+                    
+        except ValueError:
+            print("올바른 숫자를 입력해주세요.")
+        except KeyboardInterrupt:
+            print("\n프로그램을 종료합니다.")
+            break
 
 if __name__ == "__main__":
     main() 
