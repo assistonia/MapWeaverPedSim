@@ -337,16 +337,25 @@ class DiPPeRTrainer:
         if device.type == 'cuda':
             torch.backends.cudnn.benchmark = True  # 성능 최적화
             torch.backends.cudnn.deterministic = False  # 성능 우선
+            print("CUDNN 최적화 활성화")
+        
+        self.first_batch = False  # 첫 번째 배치 체크용
         
     def train_step(self, batch):
         cost_maps, start_pos, goal_pos, paths = batch
         batch_size = cost_maps.shape[0]
         
-        # GPU로 이동
-        cost_maps = cost_maps.to(self.device)
-        start_pos = start_pos.to(self.device)
-        goal_pos = goal_pos.to(self.device)
-        paths = paths.to(self.device)
+        # GPU로 이동 (non_blocking=True로 성능 향상)
+        cost_maps = cost_maps.to(self.device, non_blocking=True)
+        start_pos = start_pos.to(self.device, non_blocking=True)
+        goal_pos = goal_pos.to(self.device, non_blocking=True)
+        paths = paths.to(self.device, non_blocking=True)
+        
+        # GPU 메모리 사용량 체크 (첫 번째 배치에서만)
+        if hasattr(self, 'first_batch') and not self.first_batch:
+            if self.device.type == 'cuda':
+                print(f"배치 처리 중 GPU 메모리: {torch.cuda.memory_allocated(0) / 1024**2:.1f}MB")
+            self.first_batch = True
         
         # 랜덤 타임스텝 선택 (더 다양한 범위)
         timesteps = torch.randint(0, self.model.max_timesteps, (batch_size,), device=self.device)
@@ -371,9 +380,13 @@ class DiPPeRTrainer:
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)  # 그래디언트 클리핑 강화
         self.optimizer.step()
         
-        # GPU 메모리 정리 (필요시)
-        if self.device.type == 'cuda':
-            torch.cuda.empty_cache()
+        # GPU 메모리 정리 (매 10번째 배치마다)
+        if self.device.type == 'cuda' and hasattr(self, 'batch_count'):
+            self.batch_count += 1
+            if self.batch_count % 10 == 0:
+                torch.cuda.empty_cache()
+        elif self.device.type == 'cuda':
+            self.batch_count = 1
         
         return loss.item()
     
@@ -434,9 +447,15 @@ def main():
     
     # GPU 사용 가능하면 GPU, 아니면 CPU
     if torch.cuda.is_available():
-        device = torch.device('cuda')
+        device = torch.device('cuda:0')  # 명시적으로 GPU 0번 지정
+        torch.cuda.set_device(0)  # GPU 0번으로 설정
         print(f"🚀 GPU 사용: {torch.cuda.get_device_name(0)}")
         print(f"GPU 메모리: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f}GB")
+        print(f"현재 GPU 디바이스: {torch.cuda.current_device()}")
+        
+        # GPU 메모리 정리
+        torch.cuda.empty_cache()
+        print(f"GPU 메모리 정리 완료")
     else:
         device = torch.device('cpu')
         print("💻 GPU 없음, CPU로 학습")
@@ -511,6 +530,16 @@ def main():
     
     # 모델 초기화
     model = DiPPeR(visual_feature_dim=512, path_dim=2, max_timesteps=1000)
+    print(f"모델 생성 완료")
+    
+    # 모델을 GPU로 이동
+    model = model.to(device)
+    print(f"모델을 {device}로 이동 완료")
+    
+    # GPU 메모리 사용량 확인
+    if device.type == 'cuda':
+        print(f"GPU 메모리 사용량: {torch.cuda.memory_allocated(0) / 1024**2:.1f}MB")
+    
     trainer = DiPPeRTrainer(model, device)
     
     # 학습
