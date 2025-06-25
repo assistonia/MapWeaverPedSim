@@ -1,0 +1,131 @@
+{
+  "overview": {
+    "total_scenarios": 5,
+    "dipperp_success_rate": 1.0,
+    "astar_success_rate": 1.0,
+    "average_speedup": 0.10819474812677506,
+    "median_speedup": 0.06165797393756992
+  },
+  "performance_comparison": {
+    "cost_improvement": 0.1799852836263538,
+    "length_efficiency": -0.010571705161029454,
+    "smoothness_improvement": 0.002671572084149032,
+    "time_improvement": -22.176906557179645
+  },
+  "detailed_results": {
+    "qualitative": [
+      {
+        "scenario_id": 0,
+        "dipperp_valid": true,
+        "astar_valid": true,
+        "cost_ratio": 0.4947368421052632,
+        "length_ratio": 0.9788434404670162,
+        "smoothness_ratio": 1.054991812623882
+      },
+      {
+        "scenario_id": 1,
+        "dipperp_valid": true,
+        "astar_valid": true,
+        "cost_ratio": 2.259016393442621,
+        "length_ratio": 1.0131101133598956,
+        "smoothness_ratio": 0.9186683763096238
+      },
+      {
+        "scenario_id": 2,
+        "dipperp_valid": true,
+        "astar_valid": true,
+        "cost_ratio": 0.37662337662337664,
+        "length_ratio": 1.0332199106800473,
+        "smoothness_ratio": 0.9753858929164625
+      },
+      {
+        "scenario_id": 3,
+        "dipperp_valid": true,
+        "astar_valid": true,
+        "cost_ratio": 0.4545454545454546,
+        "length_ratio": 1.014519959564474,
+        "smoothness_ratio": 1.0313307204283462
+      },
+      {
+        "scenario_id": 4,
+        "dipperp_valid": true,
+        "astar_valid": true,
+        "cost_ratio": 0.5151515151515151,
+        "length_ratio": 1.013165101733714,
+        "smoothness_ratio": 1.00626533730094
+      }
+    ],
+    "quantitative": [
+      {
+        "scenario_id": 0,
+        "dipperp_success": true,
+        "astar_success": true,
+        "dipperp_cost": 0.08526315789473686,
+        "astar_cost": 0.17234042553191492,
+        "dipperp_length": 10.878968751102898,
+        "astar_length": 11.114104974655017,
+        "dipperp_smoothness": 0.2928309668322164,
+        "astar_smoothness": 0.2775670515431899,
+        "dipperp_time": 0.07858777046203613,
+        "astar_time": 0.022624969482421875,
+        "speedup": 0.2878942785805516
+      },
+      {
+        "scenario_id": 1,
+        "dipperp_success": true,
+        "astar_success": true,
+        "dipperp_cost": 0.7819672131147534,
+        "astar_cost": 0.34615384615384615,
+        "dipperp_length": 3.4231578734592607,
+        "astar_length": 3.3788606276040833,
+        "dipperp_smoothness": 0.2786493477224533,
+        "astar_smoothness": 0.30331875452360035,
+        "dipperp_time": 0.04218292236328125,
+        "astar_time": 0.0007832050323486328,
+        "speedup": 0.018566874660879
+      },
+      {
+        "scenario_id": 2,
+        "dipperp_success": true,
+        "astar_success": true,
+        "dipperp_cost": 0.12166161453843774,
+        "astar_cost": 0.32303256273998987,
+        "dipperp_length": 6.078133040222752,
+        "astar_length": 5.882709941412405,
+        "dipperp_smoothness": 0.41995252551300655,
+        "astar_smoothness": 0.43055013258119124,
+        "dipperp_time": 0.04136085510253906,
+        "astar_time": 0.0011677742004394531,
+        "speedup": 0.028233802167396817
+      },
+      {
+        "scenario_id": 3,
+        "dipperp_success": true,
+        "astar_success": true,
+        "dipperp_cost": 0.1636363636363637,
+        "astar_cost": 0.3600000000000001,
+        "dipperp_length": 8.433425649151875,
+        "astar_length": 8.312725215157208,
+        "dipperp_smoothness": 0.3581398272449231,
+        "astar_smoothness": 0.34725992366073966,
+        "dipperp_time": 0.04539227485656738,
+        "astar_time": 0.002798795700073242,
+        "speedup": 0.06165797393756992
+      },
+      {
+        "scenario_id": 4,
+        "dipperp_success": true,
+        "astar_success": true,
+        "dipperp_cost": 0.015151515151515152,
+        "astar_cost": 0.029411764705882353,
+        "dipperp_length": 11.065457877526581,
+        "astar_length": 10.921672942140944,
+        "dipperp_smoothness": 0.2761852337460327,
+        "astar_smoothness": 0.2744656140962103,
+        "dipperp_time": 0.05583071708679199,
+        "astar_time": 0.008074283599853516,
+        "speedup": 0.14462081128747795
+      }
+    ]
+  }
+}

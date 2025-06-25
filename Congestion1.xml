@@ -34,24 +34,131 @@
 
 
 <!-- left congestion 3,4,3,4-->
-    <agent x="-0.59" y="-1" n="3" dx="0" dy="0" type="0">
+    <agent x="-0.3" y="-0.2" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
         <addwaypoint id="wp_4" />
         <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
         <addwaypoint id="wp_4" />
         <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
         <addwaypoint id="wp_4" />
         <addwaypoint id="wp_3" />
-        <addwaypoint id="wp_4" />
-        <addwaypoint id="wp_3" />
-        <addwaypoint id="wp_4" />
-        <addwaypoint id="wp_3" />
-        <addwaypoint id="wp_4" />
-        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
         <addwaypoint id="wp_4" />
     </agent>
 
+    <agent x="-1.07" y="-0.5" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+    </agent>
+
+    <agent x="-1.11" y="-1.53" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+    </agent>
+
+    <agent x="-0.34" y="-1.67" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+        <addwaypoint id="wp_3" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_4" />
+    </agent>
+
+
 <!-- left congestion 6,7,6,7 -->
-    <agent x="3.24" y="-1.0" n="3" dx="0" dy="0" type="0">
+    <agent x="3.5" y="-1.0" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+    </agent>
+
+    <agent x="2.7" y="-0.64" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+    </agent>
+    
+    <agent x="2.7" y="-1.80" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+        <addwaypoint id="wp_6" />
+        <addwaypoint id="wp_7" />
+    </agent>
+    
+    
+    <agent x="3.63" y="-1.73" n="1" dx="0" dy="0" type="0" vmax="0.8" vmin="0.3">
         <addwaypoint id="wp_6" />
         <addwaypoint id="wp_7" />
         <addwaypoint id="wp_6" />

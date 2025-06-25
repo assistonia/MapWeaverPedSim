@@ -103,6 +103,33 @@ class Agent:
         
         return None
 
+    def calculate_individual_space(self, pos):
+        # 속도 계산
+        v = np.linalg.norm(self.velocity)
+        
+        # 속도에 따른 파라미터 계산
+        sigma_h = max(2 * v, 0.5)
+        sigma_r = 0.5 * sigma_h
+        sigma_s = (2/3) * sigma_h
+        
+        # 방향 계산
+        if v > 0:
+            theta = np.arctan2(self.velocity[1], self.velocity[0])
+        else:
+            theta = 0
+        
+        # Eq. (2) 계수 계산
+        A = (np.cos(theta)**2)/(2*sigma_h**2) + (np.sin(theta)**2)/(2*sigma_s**2)
+        B = (np.sin(2*theta))/(4*sigma_h**2) - (np.sin(2*theta))/(4*sigma_s**2)
+        C = (np.sin(theta)**2)/(2*sigma_h**2) + (np.cos(theta)**2)/(2*sigma_s**2)
+        
+        # Eq. (1) 계산
+        dx = pos[0] - self.pos[0]
+        dy = pos[1] - self.pos[1]
+        IS = np.exp(-(A*dx**2 + 2*B*dx*dy + C*dy**2))
+        
+        return IS
+
     def update(self, agents, obstacles):
         if self.finished:
             return
@@ -153,6 +180,12 @@ class Agent:
                 if dist < self.speed:
                     self.path.pop(0)
             
+            # 속도 벡터 업데이트
+            self.velocity = [
+                self.pos[0] - self.last_pos[0],
+                self.pos[1] - self.last_pos[1]
+            ]
+            
             # 현재 위치 저장
             self.last_pos = self.pos.copy()
 
@@ -160,33 +193,6 @@ class Agent:
         if self.finished:
             return 'green'  # 완료된 에이전트는 초록색으로 표시
         return 'blue'  # 진행 중인 에이전트는 파란색으로 표시
-
-    def calculate_individual_space(self, pos):
-        # 속도 계산
-        v = np.linalg.norm(self.velocity)
-        
-        # 속도에 따른 파라미터 계산
-        sigma_h = max(2 * v, 0.5)
-        sigma_r = 0.5 * sigma_h
-        sigma_s = (2/3) * sigma_h
-        
-        # 방향 계산
-        if v > 0:
-            theta = np.arctan2(self.velocity[1], self.velocity[0])
-        else:
-            theta = 0
-        
-        # Eq. (2) 계수 계산
-        A = (np.cos(theta)**2)/(2*sigma_h**2) + (np.sin(theta)**2)/(2*sigma_s**2)
-        B = (np.sin(2*theta))/(4*sigma_h**2) - (np.sin(2*theta))/(4*sigma_s**2)
-        C = (np.sin(theta)**2)/(2*sigma_h**2) + (np.cos(theta)**2)/(2*sigma_s**2)
-        
-        # Eq. (1) 계산
-        dx = pos[0] - self.pos[0]
-        dy = pos[1] - self.pos[1]
-        IS = np.exp(-(A*dx**2 + 2*B*dx*dy + C*dy**2))
-        
-        return IS
 
 class RobotSimulator:
     def __init__(self, xml_file):
@@ -203,6 +209,7 @@ class RobotSimulator:
         self.load_agents(xml_file)
         self.stuck_count = 0
         self.last_pos = [3, -4]
+        self.timestep_counter = 0
         
         # CCTV 커버리지 영역 정의
         self.cctv_coverage = [
@@ -270,7 +277,8 @@ class RobotSimulator:
             self.obstacles.append([(x1, y1), (x2, y2)])
     
     def create_grid(self):
-        self.grid = np.zeros((120, 120))
+        # 60x60 그리드로 변경
+        self.grid = np.zeros((60, 60))
         for obs in self.obstacles:
             x1, y1 = obs[0]
             x2, y2 = obs[1]
@@ -302,8 +310,9 @@ class RobotSimulator:
         for dx, dy in [(0,1), (1,0), (0,-1), (-1,0), (1,1), (-1,1), (1,-1), (-1,-1)]:
             new_x = x + dx
             new_y = y + dy
-            if 0 <= new_x < 120 and 0 <= new_y < 120 and dynamic_grid[new_y, new_x] == 0:
-                neighbors.append((new_x, new_y))
+            if 0 <= new_x < 120 and 0 <= new_y < 120:
+                if dynamic_grid[new_y, new_x] != 1:
+                    neighbors.append((new_x, new_y))
         return neighbors
 
     def heuristic(self, a, b):
@@ -344,92 +353,6 @@ class RobotSimulator:
         path.reverse()
         return path
 
-    def move_robot(self, target_pos):
-        self.target_pos = target_pos
-        self.current_path = self.a_star(self.robot_pos, target_pos)
-        if not self.current_path:
-            print("경로를 찾을 수 없습니다.")
-            return False
-        return True
-
-    def update_robot(self):
-        if self.target_pos is None:
-            return
-
-        # 현재 위치가 이전 위치와 거의 같으면 stuck_count 증가
-        if np.sqrt((self.robot_pos[0] - self.last_pos[0])**2 + (self.robot_pos[1] - self.last_pos[1])**2) < self.robot_speed * 0.1:
-            self.stuck_count += 1
-        else:
-            self.stuck_count = 0
-
-        # 경로 재계산 조건 추가
-        if not self.current_path or len(self.current_path) < 2 or self.stuck_count > 10:
-            self.current_path = self.a_star(self.robot_pos, self.target_pos)
-            self.stuck_count = 0
-        
-        if not self.current_path:
-            print("경로를 찾을 수 없습니다.")
-            return
-
-        # 다음 웨이포인트로 이동
-        next_point = self.current_path[1] if len(self.current_path) > 1 else self.current_path[0]
-        dx = next_point[0] - self.robot_pos[0]
-        dy = next_point[1] - self.robot_pos[1]
-        dist = np.sqrt(dx*dx + dy*dy)
-        
-        if dist < self.robot_speed:
-            self.robot_pos = [next_point[0], next_point[1]]
-            if len(self.current_path) > 1:
-                self.current_path.pop(0)
-        else:
-            self.robot_pos[0] += (dx/dist) * self.robot_speed
-            self.robot_pos[1] += (dy/dist) * self.robot_speed
-        
-        # 현재 위치 저장
-        self.last_pos = self.robot_pos.copy()
-
-    def calculate_individual_space(self, agent_pos, agent_vel):
-        # 속도에 따른 분산 계산
-        speed = np.sqrt(agent_vel[0]**2 + agent_vel[1]**2)
-        sigma_h = max(2 * speed, 0.5)
-        sigma_s = (2/3) * sigma_h
-        sigma_r = (1/2) * sigma_h
-        
-        # 방향 계산
-        theta = np.arctan2(agent_vel[1], agent_vel[0])
-        
-        # 그리드 상의 모든 점에 대해 개인 공간 계산
-        for i in range(60):
-            for j in range(60):
-                x = (j * self.grid_size) - 6
-                y = (i * self.grid_size) - 6
-                
-                # 에이전트와의 상대 위치
-                dx = x - agent_pos[0]
-                dy = y - agent_pos[1]
-                
-                # 전방/후방 판별
-                dot_product = dx * np.cos(theta) + dy * np.sin(theta)
-                sigma = sigma_h if dot_product > 0 else sigma_r
-                
-                # A, B, C 계수 계산
-                A = (np.cos(theta)**2)/(2*sigma**2) + (np.sin(theta)**2)/(2*sigma_s**2)
-                B = (np.sin(2*theta))/(4*sigma**2) - (np.sin(2*theta))/(4*sigma_s**2)
-                C = (np.sin(theta)**2)/(2*sigma**2) + (np.cos(theta)**2)/(2*sigma_s**2)
-                
-                # 개인 공간 값 계산
-                is_value = np.exp(-(A*dx**2 + 2*B*dx*dy + C*dy**2))
-                self.is_map[i, j] = max(self.is_map[i, j], is_value)
-    
-    def is_in_cctv_coverage(self, pos):
-        for cctv in self.cctv_coverage:
-            x1, y1 = cctv['points'][0]
-            x2, y2 = cctv['points'][1]
-            if (min(x1, x2) <= pos[0] <= max(x1, x2) and 
-                min(y1, y2) <= pos[1] <= max(y1, y2)):
-                return True
-        return False
-    
     def calculate_intention_alignment(self, agent):
         # 로봇의 의도 벡터 계산
         if self.target_pos is None:
@@ -472,30 +395,27 @@ class RobotSimulator:
                 # 에이전트의 영향 범위 내에 있는 경우에만 계산 (3m 반경)
                 if dist <= 3.0:
                     # Individual Space 계산
-                    IS = agent.calculate_individual_space(pos)
+                    IS = self.calculate_individual_space(pos, agent)
                     
                     # Individual Space 임계값 체크
                     if IS > self.is_threshold:
                         tau = self.calculate_intention_alignment(agent)
                         social_cost = self.gamma1 * (1 - tau)
                         total_social_cost += social_cost
+                        
+                        print(f"\nCIGP 판단 과정:")
+                        print(f"위치: ({pos[0]:.2f}, {pos[1]:.2f})")
+                        print(f"에이전트 위치: ({agent.pos[0]:.2f}, {agent.pos[1]:.2f})")
+                        print(f"거리: {dist:.2f}m")
+                        print(f"Individual Space 값: {IS:.2f}")
+                        print(f"의도 정렬 점수(τ): {tau:.2f}")
+                        print(f"사회적 비용(S_IS): {social_cost:.2f}")
         
         return total_social_cost
 
     def update_fused_cost_map(self):
-        # Fused Cost Map 초기화
-        self.fused_cost_map = np.zeros((60, 60))
-        
-        # 장애물 비용 추가
-        for obs in self.obstacles:
-            x1, y1 = obs[0]
-            x2, y2 = obs[1]
-            x1_idx = int((x1 + 6) / self.grid_size)
-            y1_idx = int((y1 + 6) / self.grid_size)
-            x2_idx = int((x2 + 6) / self.grid_size)
-            y2_idx = int((y2 + 6) / self.grid_size)
-            self.fused_cost_map[min(y1_idx, y2_idx):max(y1_idx, y2_idx)+1, 
-                              min(x1_idx, x2_idx):max(x1_idx, x2_idx)+1] = 1.0
+        # Fused Cost Map 업데이트
+        self.fused_cost_map = self.grid.copy()
         
         # 에이전트의 영향 범위 내의 그리드 셀만 계산
         for agent in self.agents:
@@ -510,15 +430,170 @@ class RobotSimulator:
                         x_idx = agent_x_idx + j
                         y_idx = agent_y_idx + i
                         
-                        if 0 <= x_idx < 60 and 0 <= y_idx < 60:
+                        if 0 <= x_idx < 60 and 0 <= y_idx < 60:  # 60x60 그리드로 변경
                             x = (x_idx * self.grid_size) - 6
                             y = (y_idx * self.grid_size) - 6
-                            
-                            # 장애물이 아닌 경우에만 social cost 계산
-                            if self.fused_cost_map[y_idx, x_idx] < 1.0:
+                            if self.fused_cost_map[y_idx, x_idx] == 0:
                                 social_cost = self.calculate_social_cost([x, y])
-                                self.fused_cost_map[y_idx, x_idx] = max(self.fused_cost_map[y_idx, x_idx], social_cost)
+                                self.fused_cost_map[y_idx, x_idx] = min(social_cost, 1.0)
 
+    def a_star_cigp(self, start, goal):
+        start_idx = (int((start[0] + 6) / self.grid_size), int((start[1] + 6) / self.grid_size))
+        goal_idx = (int((goal[0] + 6) / self.grid_size), int((goal[1] + 6) / self.grid_size))
+        
+        print(f"\nCIGP 경로 계획 시작:")
+        print(f"시작점: ({start[0]:.2f}, {start[1]:.2f})")
+        print(f"목표점: ({goal[0]:.2f}, {goal[1]:.2f})")
+        
+        # 시작점과 목표점이 유효한지 확인
+        if not (0 <= start_idx[0] < 120 and 0 <= start_idx[1] < 120 and 
+                0 <= goal_idx[0] < 120 and 0 <= goal_idx[1] < 120):
+            print("시작점 또는 목표점이 맵 범위를 벗어났습니다.")
+            return None
+        
+        # 시작점이나 목표점이 장애물 위에 있는지 확인
+        if self.fused_cost_map[start_idx[1], start_idx[0]] == 1 or self.fused_cost_map[goal_idx[1], goal_idx[0]] == 1:
+            print("시작점 또는 목표점이 장애물 위에 있습니다.")
+            return None
+        
+        open_set = {start_idx}
+        closed_set = set()
+        came_from = {}
+        g_score = {start_idx: 0}
+        f_score = {start_idx: self.heuristic(start_idx, goal_idx)}
+        
+        while open_set:
+            current = min(open_set, key=lambda x: f_score.get(x, float('inf')))
+            
+            if current == goal_idx:
+                path = []
+                while current in came_from:
+                    x = (current[0] * self.grid_size) - 6
+                    y = (current[1] * self.grid_size) - 6
+                    path.append([x, y])
+                    current = came_from[current]
+                path.append(start)
+                path.reverse()
+                print("\n경로 계획 완료:")
+                for i, point in enumerate(path):
+                    print(f"웨이포인트 {i+1}: ({point[0]:.2f}, {point[1]:.2f})")
+                return path
+            
+            open_set.remove(current)
+            closed_set.add(current)
+            
+            for neighbor in self.get_neighbors(current, self.fused_cost_map):
+                if neighbor in closed_set:
+                    continue
+                
+                # CIGP 비용 함수 (Eq. 3)
+                # 장애물인 경우 무한대 비용 부여
+                if self.fused_cost_map[neighbor[1], neighbor[0]] == 1:
+                    continue
+                
+                tentative_g_score = g_score[current] + self.heuristic(current, neighbor) + self.fused_cost_map[neighbor[1], neighbor[0]]
+                
+                if neighbor not in open_set:
+                    open_set.add(neighbor)
+                elif tentative_g_score >= g_score.get(neighbor, float('inf')):
+                    continue
+                
+                came_from[neighbor] = current
+                g_score[neighbor] = tentative_g_score
+                f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor, goal_idx)
+        
+        print("목표 지점까지의 경로를 찾을 수 없습니다.")
+        return None
+
+    def move_robot(self, target_pos):
+        self.target_pos = target_pos
+        self.update_fused_cost_map()  # Fused Cost Map 업데이트
+        self.current_path = self.a_star_cigp(self.robot_pos, target_pos)
+        if not self.current_path:
+            print("경로를 찾을 수 없습니다.")
+            return False
+        return True
+
+    def update_robot(self):
+        if self.target_pos is None:
+            return
+
+        # 현재 위치가 이전 위치와 거의 같으면 stuck_count 증가
+        if np.sqrt((self.robot_pos[0] - self.last_pos[0])**2 + (self.robot_pos[1] - self.last_pos[1])**2) < self.robot_speed * 0.1:
+            self.stuck_count += 1
+        else:
+            self.stuck_count = 0
+
+        # Fused Cost Map 업데이트 (매 타임스텝마다)
+        self.update_fused_cost_map()
+
+        # 경로 재계산 조건 수정
+        need_replan = False
+        
+        # 1. 경로가 없거나 너무 짧은 경우
+        if not self.current_path or len(self.current_path) < 2:
+            need_replan = True
+        
+        # 2. stuck 상태인 경우
+        elif self.stuck_count > 10:
+            need_replan = True
+        
+        # 3. 현재 경로의 다음 웨이포인트가 장애물이나 높은 사회적 비용을 가진 영역에 있는 경우
+        elif len(self.current_path) > 1:
+            next_point = self.current_path[1]
+            x_idx = int((next_point[0] + 6) / self.grid_size)
+            y_idx = int((next_point[1] + 6) / self.grid_size)
+            
+            if (0 <= x_idx < 60 and 0 <= y_idx < 60 and 
+                (self.fused_cost_map[y_idx, x_idx] > 0.8 or  # 장애물 또는 높은 사회적 비용
+                 self.calculate_social_cost(next_point) > 0.8)):  # 높은 사회적 비용
+                need_replan = True
+        
+        # 경로 재계산이 필요한 경우에만 실행
+        if need_replan:
+            print(f"\n타임스텝 {self.timestep_counter}: CIGP 경로 재계산")
+            self.current_path = self.a_star_cigp(self.robot_pos, self.target_pos)
+            self.stuck_count = 0
+        
+        if not self.current_path:
+            print("경로를 찾을 수 없습니다.")
+            return
+
+        # 다음 웨이포인트로 이동
+        next_point = self.current_path[1] if len(self.current_path) > 1 else self.current_path[0]
+        dx = next_point[0] - self.robot_pos[0]
+        dy = next_point[1] - self.robot_pos[1]
+        dist = np.sqrt(dx*dx + dy*dy)
+        
+        if dist < self.robot_speed:
+            self.robot_pos = [next_point[0], next_point[1]]
+            if len(self.current_path) > 1:
+                self.current_path.pop(0)
+        else:
+            self.robot_pos[0] += (dx/dist) * self.robot_speed
+            self.robot_pos[1] += (dy/dist) * self.robot_speed
+        
+        # 로봇 속도 업데이트
+        self.robot_vel = [
+            self.robot_pos[0] - self.last_pos[0],
+            self.robot_pos[1] - self.last_pos[1]
+        ]
+        
+        # 현재 위치 저장
+        self.last_pos = self.robot_pos.copy()
+
+    def calculate_individual_space(self, pos, agent):
+        return agent.calculate_individual_space(pos)
+
+    def is_in_cctv_coverage(self, pos):
+        for cctv in self.cctv_coverage:
+            x1, y1 = cctv['points'][0]
+            x2, y2 = cctv['points'][1]
+            if (min(x1, x2) <= pos[0] <= max(x1, x2) and 
+                min(y1, y2) <= pos[1] <= max(y1, y2)):
+                return True
+        return False
+    
     def update(self):
         # Individual Space 맵 초기화
         self.is_map = np.zeros((60, 60))
@@ -529,14 +604,14 @@ class RobotSimulator:
                 # 에이전트의 속도 계산 (이전 위치와의 차이)
                 velocity = [agent.pos[0] - agent.last_pos[0], 
                           agent.pos[1] - agent.last_pos[1]]
-                self.calculate_individual_space(agent.pos, velocity)
+                self.calculate_individual_space(agent.pos, agent)
             agent.update(self.agents, self.obstacles)
-        
-        # Fused Cost Map 업데이트
-        self.update_fused_cost_map()
         
         # 로봇 업데이트
         self.update_robot()
+        
+        # 타임스텝 카운터 증가
+        self.timestep_counter += 1
     
     def visualize(self, path=None):
         # 메인 시뮬레이션 창
@@ -591,6 +666,10 @@ class RobotSimulator:
             plt.text((x1 + x2)/2, (y1 + y2)/2, cctv['name'], ha='center', va='center', 
                     color='black', bbox=dict(facecolor='white', alpha=0.7))
         
+        # 장애물 표시
+        for obs in self.obstacles:
+            plt.plot([obs[0][0], obs[1][0]], [obs[0][1], obs[1][1]], 'k-', linewidth=2)
+        
         plt.colorbar(label='Individual Space Value')
         plt.grid(True)
         plt.axis('equal')
@@ -602,9 +681,9 @@ class RobotSimulator:
         plt.figure(3)
         plt.clf()
         
-        # Fused Cost Map 표시 (vmin, vmax 설정으로 색상 범위 조정)
+        # Fused Cost Map 표시
         plt.imshow(self.fused_cost_map, extent=[-6, 6, -6, 6], origin='lower', 
-                  cmap='YlOrRd', alpha=0.7, vmin=0, vmax=1)
+                  cmap='YlOrRd', alpha=0.7)
         
         # CCTV 커버리지 영역을 검은색 박스로 표시
         for cctv in self.cctv_coverage:
@@ -618,9 +697,6 @@ class RobotSimulator:
         for obs in self.obstacles:
             plt.plot([obs[0][0], obs[1][0]], [obs[0][1], obs[1][1]], 'k-', linewidth=2)
         
-        # 로봇 위치 표시
-        plt.plot(self.robot_pos[0], self.robot_pos[1], 'ro', markersize=8)
-        
         plt.colorbar(label='Fused Cost Value')
         plt.grid(True)
         plt.axis('equal')
@@ -632,7 +708,7 @@ class RobotSimulator:
         plt.pause(0.01)
 
 def main():
-    simulator = RobotSimulator("Congestion1.xml")
+    simulator = RobotSimulator("Circulation1.xml")
     
     while True:
         try:

@@ -13,4 +13,7 @@ ehthumbs.db
 Thumbs.db
 
 # User specified
-논문코드/ 
+논문코드/ # 큰 파일들 제외
+*.pth
+training_data*.json
+evaluation_results/*.png

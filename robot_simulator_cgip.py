@@ -708,7 +708,7 @@ class RobotSimulator:
         plt.pause(0.01)
 
 def main():
-    simulator = RobotSimulator("Circulation1.xml")
+    simulator = RobotSimulator("Congestion1.xml")
     
     while True:
         try:
