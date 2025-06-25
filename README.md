@@ -15,11 +15,11 @@ CGIP(Context-based Intention-guided Planning) 프레임워크에 DiPPeR(Diffusio
 
 ### **1단계: 데이터 수집 및 학습** (처음 한 번만)
 ```bash
-# 1-1. 학습 데이터 수집 + 모델 학습 (한 번에)
+# 1-1. 학습 데이터 수집 + 모델 학습 (한 번에) - 개선된 설정
 python train_dipperp.py \
     --xml_file scenarios/Circulation1.xml \
-    --num_episodes 200 \
-    --epochs 100 \
+    --num_episodes 1000 \
+    --epochs 500 \
     --batch_size 16 \
     --save_data training_data.json \
     --model_save_path dipperp_model.pth
@@ -53,10 +53,10 @@ python inference_dipperp.py --model_path models/dipperp_model_best.pth
 
 ### **이미 데이터가 있는 경우:**
 ```bash
-# 1. 기존 데이터로 모델만 학습
+# 1. 기존 데이터로 모델만 학습 - 개선된 설정
 python train_dipperp.py \
     --load_data training_data.json \
-    --epochs 100 \
+    --epochs 500 \
     --batch_size 16 \
     --model_save_path dipperp_model_v2.pth
 
@@ -131,8 +131,8 @@ python -c "import numpy; print(f'NumPy: {numpy.__version__}')"
 
 ### **처음 사용자 (3단계만!)**
 ```bash
-# 1️⃣ 데이터 수집 + 학습 (한 번에)
-python train_dipperp.py --xml_file scenarios/Circulation1.xml --num_episodes 200 --epochs 100 --save_data training_data.json
+# 1️⃣ 데이터 수집 + 학습 (한 번에) - 개선된 설정
+python train_dipperp.py --xml_file scenarios/Circulation1.xml --num_episodes 1000 --epochs 500 --save_data training_data.json
 
 # 2️⃣ 데이터 확인 (선택사항)
 python visualize_dataset.py --mode interactive
@@ -143,8 +143,8 @@ python robot_simuator_dippeR.py scenarios/Circulation1.xml models/dipperp_model_
 
 ### **기존 사용자 (데이터 재활용)**
 ```bash
-# 기존 데이터로 재학습
-python train_dipperp.py --load_data training_data.json --epochs 100
+# 기존 데이터로 재학습 - 개선된 설정
+python train_dipperp.py --load_data training_data.json --epochs 500
 
 # 바로 실행
 python robot_simuator_dippeR.py scenarios/Circulation1.xml models/dipperp_model_best.pth

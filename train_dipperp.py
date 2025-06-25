@@ -83,20 +83,20 @@ class SimulationDataCollector:
             if self.simulator.target_pos is not None:
                 paths_to_collect = []
                 
-                # 1. 기본 A* 경로 (50% 확률)
-                if np.random.random() < 0.5:
+                # 1. 기본 A* 경로 (30% 확률 - 감소)
+                if np.random.random() < 0.3:
                     astar_path = self.simulator.fallback_astar_planning(current_pos, goal_pos)
                     if astar_path and len(astar_path) > 2:
                         paths_to_collect.append(("astar", astar_path))
                 
-                # 2. 사회적 비용 강화 A* 경로 (30% 확률)
-                if np.random.random() < 0.3:
+                # 2. 사회적 비용 강화 A* 경로 (40% 확률 - 증가)
+                if np.random.random() < 0.4:
                     social_path = self.generate_social_aware_path(current_pos, goal_pos)
                     if social_path and len(social_path) > 2:
                         paths_to_collect.append(("social", social_path))
                 
-                # 3. 우회 경로 (20% 확률) - 중간점을 거쳐가는 경로
-                if np.random.random() < 0.2:
+                # 3. 우회 경로 (30% 확률 - 증가) - 중간점을 거쳐가는 경로
+                if np.random.random() < 0.3:
                     detour_path = self.generate_detour_path(current_pos, goal_pos)
                     if detour_path and len(detour_path) > 2:
                         paths_to_collect.append(("detour", detour_path))
@@ -319,19 +319,19 @@ class DiPPeRTrainer:
         self.model = model.to(device)
         self.device = device
         
-        # GPU 사용 시 학습률 조정
+        # GPU 사용 시 학습률 조정 (성능 개선을 위해 학습률 대폭 감소)
         if device.type == 'cuda':
-            lr = 1e-4  # GPU에서는 더 높은 학습률
-            print(f"🚀 GPU 학습률: {lr}")
+            lr = 1e-5  # GPU에서도 낮은 학습률로 안정적 학습
+            print(f"🚀 GPU 학습률 (개선): {lr}")
         else:
-            lr = 5e-5  # CPU에서는 낮은 학습률
-            print(f"💻 CPU 학습률: {lr}")
+            lr = 5e-6  # CPU에서는 더 낮은 학습률
+            print(f"💻 CPU 학습률 (개선): {lr}")
             
         self.optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-6)
         self.scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(self.optimizer, T_0=50, T_mult=2)
         self.best_loss = float('inf')
         self.patience_counter = 0
-        self.patience = 30  # Early stopping patience 증가
+        self.patience = 50  # Early stopping patience 대폭 증가 (더 긴 학습)
         
         # GPU 메모리 최적화
         if device.type == 'cuda':
@@ -371,8 +371,8 @@ class DiPPeRTrainer:
         # 노이즈 예측
         predicted_noise = self.model(cost_maps, noisy_paths, timesteps, start_goal_pos)
         
-        # 손실 계산 (Huber Loss로 변경 - 더 안정적)
-        loss = nn.SmoothL1Loss()(predicted_noise, noise)
+        # 손실 계산 (MSE Loss로 변경 - 더 정확한 학습)
+        loss = nn.MSELoss()(predicted_noise, noise)
         
         # 역전파
         self.optimizer.zero_grad()
@@ -409,7 +409,7 @@ class DiPPeRTrainer:
         self.scheduler.step()
         
         # Early stopping 체크 (더 엄격하게)
-        if avg_loss < self.best_loss * 0.995:  # 0.5% 이상 개선되어야 함
+        if avg_loss < self.best_loss * 0.999:  # 0.1% 이상 개선되어야 함 (더 엄격)
             self.best_loss = avg_loss
             self.patience_counter = 0
             return avg_loss, True  # 개선됨
@@ -435,8 +435,8 @@ class DiPPeRTrainer:
 def main():
     parser = argparse.ArgumentParser(description='DiPPeR 모델 학습')
     parser.add_argument('--xml_file', default='scenarios/Congestion1.xml', help='시뮬레이션 XML 파일')
-    parser.add_argument('--num_episodes', type=int, default=200, help='데이터 수집 에피소드 수')
-    parser.add_argument('--epochs', type=int, default=100, help='학습 에포크 수')
+    parser.add_argument('--num_episodes', type=int, default=1000, help='데이터 수집 에피소드 수 (대폭 증가)')
+    parser.add_argument('--epochs', type=int, default=500, help='학습 에포크 수 (대폭 증가)')
     parser.add_argument('--batch_size', type=int, default=8, help='배치 크기 (GPU 메모리에 따라 조정)')
     parser.add_argument('--visualize', action='store_true', help='데이터 수집 시 시각화')
     parser.add_argument('--save_data', help='수집된 데이터 저장 경로')
