@@ -17,3 +17,18 @@ Thumbs.db
 *.pth
 training_data*.json
 evaluation_results/*.png
+
+# 폴더별 큰 파일들 제외
+models/*.pth
+models/*.json
+*.json
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt

@@ -75,7 +75,7 @@ def check_requirements():
 def main():
     parser = argparse.ArgumentParser(description='DiPPeR 종합 검증 실행')
     parser.add_argument('--model_path', required=True, help='학습된 DiPPeR 모델 경로')
-    parser.add_argument('--xml_file', default='Circulation1.xml', help='시뮬레이션 XML 파일')
+    parser.add_argument('--xml_file', default='scenarios/Circulation1.xml', help='시뮬레이션 XML 파일')
     parser.add_argument('--scenarios', type=int, default=50, help='테스트 시나리오 수')
     parser.add_argument('--episodes', type=int, default=20, help='통합 테스트 에피소드 수')
     parser.add_argument('--skip_model_eval', action='store_true', help='모델 자체 평가 건너뛰기')

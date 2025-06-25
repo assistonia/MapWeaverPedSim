@@ -414,6 +414,9 @@ class RobotSimulatorDiPPeR:
         self.use_dipperp = True  # DiPPeR 사용 여부 (학습 시 False로 설정 가능)
         
         if model_path:
+            # 모델 파일 경로 처리
+            if not os.path.exists(model_path) and not model_path.startswith('models/'):
+                model_path = f'models/{model_path}'
             try:
                 checkpoint = torch.load(model_path, map_location=self.device)
                 if 'model_state_dict' in checkpoint:
@@ -438,6 +441,9 @@ class RobotSimulatorDiPPeR:
         self.fig3 = plt.figure(3, figsize=(8, 8))
 
     def load_agents(self, xml_file):
+        # XML 파일 경로 처리
+        if not os.path.exists(xml_file) and not xml_file.startswith('scenarios/'):
+            xml_file = f'scenarios/{xml_file}'
         tree = ET.parse(xml_file)
         root = tree.getroot()
         
@@ -458,6 +464,9 @@ class RobotSimulatorDiPPeR:
             self.agents.append(Agent(x, y, waypoint_list))
 
     def load_obstacles(self, xml_file):
+        # XML 파일 경로 처리
+        if not os.path.exists(xml_file) and not xml_file.startswith('scenarios/'):
+            xml_file = f'scenarios/{xml_file}'
         tree = ET.parse(xml_file)
         root = tree.getroot()
         for obstacle in root.findall('obstacle'):

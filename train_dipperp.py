@@ -403,14 +403,14 @@ class DiPPeRTrainer:
 
 def main():
     parser = argparse.ArgumentParser(description='DiPPeR 모델 학습')
-    parser.add_argument('--xml_file', default='Congestion1.xml', help='시뮬레이션 XML 파일')
+    parser.add_argument('--xml_file', default='scenarios/Congestion1.xml', help='시뮬레이션 XML 파일')
     parser.add_argument('--num_episodes', type=int, default=200, help='데이터 수집 에피소드 수')
     parser.add_argument('--epochs', type=int, default=100, help='학습 에포크 수')
     parser.add_argument('--batch_size', type=int, default=8, help='배치 크기 (GPU 메모리에 따라 조정)')
     parser.add_argument('--visualize', action='store_true', help='데이터 수집 시 시각화')
     parser.add_argument('--save_data', help='수집된 데이터 저장 경로')
     parser.add_argument('--load_data', help='저장된 데이터 로드 경로')
-    parser.add_argument('--model_save_path', default='dipperp_model.pth', help='모델 저장 경로')
+    parser.add_argument('--model_save_path', default='models/dipperp_model.pth', help='모델 저장 경로')
     
     args = parser.parse_args()
     
@@ -474,7 +474,7 @@ def main():
     
     # 학습
     print("학습 시작...")
-    best_model_path = f"{args.model_save_path.split('.')[0]}_best.pth"
+    best_model_path = f"models/{args.model_save_path.split('/')[-1].split('.')[0]}_best.pth"
     
     for epoch in range(args.epochs):
         avg_loss, improved = trainer.train_epoch(dataloader)
@@ -487,7 +487,7 @@ def main():
         
         # 정기 모델 저장 (10 에포크마다)
         if (epoch + 1) % 10 == 0:
-            save_path = f"{args.model_save_path.split('.')[0]}_epoch_{epoch+1}.pth"
+            save_path = f"models/{args.model_save_path.split('/')[-1].split('.')[0]}_epoch_{epoch+1}.pth"
             trainer.save_model(save_path)
         
         # Early stopping 체크

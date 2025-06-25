@@ -406,7 +406,7 @@ class DiPPeRValidator:
 def main():
     parser = argparse.ArgumentParser(description='DiPPeR 모델 검증')
     parser.add_argument('--model_path', required=True, help='학습된 DiPPeR 모델 경로')
-    parser.add_argument('--xml_file', default='Circulation1.xml', help='시뮬레이션 XML 파일')
+    parser.add_argument('--xml_file', default='scenarios/Circulation1.xml', help='시뮬레이션 XML 파일')
     parser.add_argument('--num_scenarios', type=int, default=100, help='테스트 시나리오 수')
     parser.add_argument('--save_dir', default='evaluation_results', help='결과 저장 디렉토리')
     

@@ -145,7 +145,7 @@ class DiPPeRInference:
 
 def main():
     parser = argparse.ArgumentParser(description='DiPPeR 추론 실행')
-    parser.add_argument('--xml_file', default='Congestion1.xml', help='시뮬레이션 XML 파일')
+    parser.add_argument('--xml_file', default='scenarios/Congestion1.xml', help='시뮬레이션 XML 파일')
     parser.add_argument('--model_path', help='학습된 DiPPeR 모델 경로')
     parser.add_argument('--mode', choices=['interactive', 'benchmark'], default='interactive', 
                         help='실행 모드: interactive (대화형) 또는 benchmark (성능 테스트)')
