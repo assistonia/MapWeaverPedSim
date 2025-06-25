@@ -189,9 +189,11 @@ class Agent:
         return IS
 
 class RobotSimulator:
-    def __init__(self, xml_file):
+    def __init__(self, xml_file, use_dipperp=False):
+        self.xml_file = xml_file  # xml_file 속성 추가
+        self.use_dipperp = use_dipperp
         self.obstacles = []
-        self.grid_size = 0.2  # 그리드 크기를 0.2m로 증가
+        self.grid_size = 0.1  # 120x120 그리드를 위해 0.1로 설정
         self.load_obstacles(xml_file)
         self.robot_pos = [3, -4]
         self.robot_vel = [0, 0]
@@ -203,6 +205,14 @@ class RobotSimulator:
         self.load_agents(xml_file)
         self.stuck_count = 0
         self.last_pos = [3, -4]
+        
+        # 명확한 장애물 구조 정의 (Circulation1.xml 기준)
+        self.obstacle_rectangles = [
+            # 장애물1: 오른쪽 아래 직사각형
+            {'x_min': -0.06, 'x_max': 2.19, 'y_min': -2.54, 'y_max': 0.21},
+            # 장애물2: 왼쪽 위 직사각형  
+            {'x_min': -3.61, 'x_max': -1.61, 'y_min': -1.34, 'y_max': 2.66}
+        ]
         
         # CCTV 커버리지 영역 정의
         self.cctv_coverage = [
@@ -630,6 +640,112 @@ class RobotSimulator:
         
         plt.draw()
         plt.pause(0.01)
+
+    def _is_in_obstacle(self, pos):
+        """위치가 장애물 내부에 있는지 체크"""
+        x, y = pos[0], pos[1]
+        
+        # 맵 경계 체크
+        if not (-6.0 <= x <= 6.0 and -6.0 <= y <= 6.0):
+            return True
+        
+        # 명확한 장애물 직사각형 체크
+        for rect in self.obstacle_rectangles:
+            if (rect['x_min'] <= x <= rect['x_max'] and 
+                rect['y_min'] <= y <= rect['y_max']):
+                return True
+        
+        return False
+    
+    def astar_path_planning(self, start_pos, goal_pos, cost_map=None):
+        """A* 경로 계획"""
+        if cost_map is None:
+            cost_map = self.create_cost_map()
+        
+        # 시작점과 목표점이 장애물 내부에 있는지 체크
+        if self._is_in_obstacle(start_pos) or self._is_in_obstacle(goal_pos):
+            return None
+        
+        # 그리드 인덱스로 변환
+        start_idx = (int((start_pos[0] + 6) / self.grid_size), 
+                    int((start_pos[1] + 6) / self.grid_size))
+        goal_idx = (int((goal_pos[0] + 6) / self.grid_size), 
+                   int((goal_pos[1] + 6) / self.grid_size))
+        
+        # 범위 체크
+        if (not (0 <= start_idx[0] < 120 and 0 <= start_idx[1] < 120) or
+            not (0 <= goal_idx[0] < 120 and 0 <= goal_idx[1] < 120)):
+            return None
+        
+        # 장애물 체크
+        if cost_map[start_idx[1], start_idx[0]] >= 1.0 or cost_map[goal_idx[1], goal_idx[0]] >= 1.0:
+            return None
+        
+        # A* 알고리즘
+        from heapq import heappush, heappop
+        
+        open_set = [(0, start_idx)]
+        came_from = {}
+        g_score = {start_idx: 0}
+        f_score = {start_idx: self.heuristic(start_idx, goal_idx)}
+        
+        while open_set:
+            current = heappop(open_set)[1]
+            
+            if current == goal_idx:
+                # 경로 재구성
+                path = []
+                while current in came_from:
+                    x = current[0] * self.grid_size - 6
+                    y = current[1] * self.grid_size - 6
+                    path.append([x, y])
+                    current = came_from[current]
+                path.append(start_pos.tolist() if hasattr(start_pos, 'tolist') else list(start_pos))
+                path.reverse()
+                return path
+            
+            # 이웃 노드 탐색
+            for dx, dy in [(0,1), (1,0), (0,-1), (-1,0), (1,1), (-1,1), (1,-1), (-1,-1)]:
+                neighbor = (current[0] + dx, current[1] + dy)
+                
+                if (0 <= neighbor[0] < 120 and 0 <= neighbor[1] < 120 and
+                    cost_map[neighbor[1], neighbor[0]] < 1.0):
+                    
+                    tentative_g_score = g_score[current] + self.heuristic(current, neighbor)
+                    
+                    if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                        came_from[neighbor] = current
+                        g_score[neighbor] = tentative_g_score
+                        f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor, goal_idx)
+                        heappush(open_set, (f_score[neighbor], neighbor))
+        
+        return None
+    
+    def create_cost_map(self):
+        """비용 맵 생성"""
+        cost_map = np.zeros((120, 120))
+        
+        # 장애물 영역을 1.0으로 설정
+        for rect in self.obstacle_rectangles:
+            x_min_idx = int((rect['x_min'] + 6) / self.grid_size)
+            x_max_idx = int((rect['x_max'] + 6) / self.grid_size)
+            y_min_idx = int((rect['y_min'] + 6) / self.grid_size)
+            y_max_idx = int((rect['y_max'] + 6) / self.grid_size)
+            
+            x_min_idx = max(0, min(119, x_min_idx))
+            x_max_idx = max(0, min(119, x_max_idx))
+            y_min_idx = max(0, min(119, y_min_idx))
+            y_max_idx = max(0, min(119, y_max_idx))
+            
+            cost_map[y_min_idx:y_max_idx+1, x_min_idx:x_max_idx+1] = 1.0
+        
+        # 경계 영역도 장애물로 설정
+        cost_map[0, :] = 1.0  # 위쪽 경계
+        cost_map[-1, :] = 1.0  # 아래쪽 경계
+        cost_map[:, 0] = 1.0  # 왼쪽 경계
+        cost_map[:, -1] = 1.0  # 오른쪽 경계
+        
+        return cost_map
 
 def main():
     simulator = RobotSimulator("Congestion1.xml")
