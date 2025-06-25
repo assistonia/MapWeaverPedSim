@@ -318,11 +318,25 @@ class DiPPeRTrainer:
     def __init__(self, model, device='cuda'):
         self.model = model.to(device)
         self.device = device
-        self.optimizer = optim.AdamW(model.parameters(), lr=5e-5, weight_decay=1e-6)  # 학습률 낮춤
-        self.scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(self.optimizer, T_0=50, T_mult=2)  # 더 부드러운 스케줄러
+        
+        # GPU 사용 시 학습률 조정
+        if device.type == 'cuda':
+            lr = 1e-4  # GPU에서는 더 높은 학습률
+            print(f"🚀 GPU 학습률: {lr}")
+        else:
+            lr = 5e-5  # CPU에서는 낮은 학습률
+            print(f"💻 CPU 학습률: {lr}")
+            
+        self.optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-6)
+        self.scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(self.optimizer, T_0=50, T_mult=2)
         self.best_loss = float('inf')
         self.patience_counter = 0
         self.patience = 30  # Early stopping patience 증가
+        
+        # GPU 메모리 최적화
+        if device.type == 'cuda':
+            torch.backends.cudnn.benchmark = True  # 성능 최적화
+            torch.backends.cudnn.deterministic = False  # 성능 우선
         
     def train_step(self, batch):
         cost_maps, start_pos, goal_pos, paths = batch
@@ -356,6 +370,10 @@ class DiPPeRTrainer:
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)  # 그래디언트 클리핑 강화
         self.optimizer.step()
+        
+        # GPU 메모리 정리 (필요시)
+        if self.device.type == 'cuda':
+            torch.cuda.empty_cache()
         
         return loss.item()
     
@@ -414,8 +432,14 @@ def main():
     
     args = parser.parse_args()
     
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"사용 디바이스: {device}")
+    # GPU 사용 가능하면 GPU, 아니면 CPU
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+        print(f"🚀 GPU 사용: {torch.cuda.get_device_name(0)}")
+        print(f"GPU 메모리: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f}GB")
+    else:
+        device = torch.device('cpu')
+        print("💻 GPU 없음, CPU로 학습")
     
     # 데이터 수집 또는 로드
     if args.load_data and os.path.exists(args.load_data):
@@ -459,6 +483,21 @@ def main():
     import multiprocessing
     num_workers = min(4, multiprocessing.cpu_count())
     
+    # GPU 사용 시 배치 크기 자동 조정
+    if device.type == 'cuda':
+        # GPU 메모리에 따른 배치 크기 조정
+        gpu_memory_gb = torch.cuda.get_device_properties(0).total_memory / 1024**3
+        if gpu_memory_gb >= 8:
+            recommended_batch_size = 16
+        elif gpu_memory_gb >= 4:
+            recommended_batch_size = 12
+        else:
+            recommended_batch_size = 8
+        
+        if args.batch_size == 8:  # 기본값인 경우만 조정
+            args.batch_size = recommended_batch_size
+            print(f"🚀 GPU 메모리 {gpu_memory_gb:.1f}GB 감지: 배치 크기를 {args.batch_size}로 자동 조정")
+    
     dataloader = DataLoader(
         dataset, 
         batch_size=args.batch_size, 
@@ -467,6 +506,8 @@ def main():
         pin_memory=True if device.type == 'cuda' else False,
         persistent_workers=True if num_workers > 0 else False
     )
+    
+    print(f"📊 배치 크기: {args.batch_size}, 워커 수: {num_workers}")
     
     # 모델 초기화
     model = DiPPeR(visual_feature_dim=512, path_dim=2, max_timesteps=1000)
