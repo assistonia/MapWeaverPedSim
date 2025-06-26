@@ -310,7 +310,7 @@ class RobotSimulator:
         for dx, dy in [(0,1), (1,0), (0,-1), (-1,0), (1,1), (-1,1), (1,-1), (-1,-1)]:
             new_x = x + dx
             new_y = y + dy
-            if 0 <= new_x < 120 and 0 <= new_y < 120:
+            if 0 <= new_x < 60 and 0 <= new_y < 60:  # 60x60 그리드로 수정
                 if dynamic_grid[new_y, new_x] != 1:
                     neighbors.append((new_x, new_y))
         return neighbors
@@ -446,8 +446,8 @@ class RobotSimulator:
         print(f"목표점: ({goal[0]:.2f}, {goal[1]:.2f})")
         
         # 시작점과 목표점이 유효한지 확인
-        if not (0 <= start_idx[0] < 120 and 0 <= start_idx[1] < 120 and 
-                0 <= goal_idx[0] < 120 and 0 <= goal_idx[1] < 120):
+        if not (0 <= start_idx[0] < 60 and 0 <= start_idx[1] < 60 and 
+                0 <= goal_idx[0] < 60 and 0 <= goal_idx[1] < 60):
             print("시작점 또는 목표점이 맵 범위를 벗어났습니다.")
             return None
         
@@ -708,7 +708,7 @@ class RobotSimulator:
         plt.pause(0.01)
 
 def main():
-    simulator = RobotSimulator("Congestion1.xml")
+    simulator = RobotSimulator("scenarios/Congestion1.xml")
     
     while True:
         try:

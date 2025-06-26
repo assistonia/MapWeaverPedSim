@@ -208,19 +208,24 @@ class CDIFVisualizer:
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
         fig.suptitle('CDIF Waypoint Generation Process', fontsize=16)
         
-        # 1. 원본 비용맵
+        # 1. 장애물 맵 + 비용맵
         ax = axes[0, 0]
-        im1 = ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6])
+        # 장애물을 기본으로 표시하고, 비용맵을 오버레이
+        ax.imshow(self.simulator.grid, cmap='gray', origin='lower', extent=[-6, 6, -6, 6], alpha=0.8)
+        if cost_map.max() > 0:  # 비용맵에 데이터가 있으면 오버레이
+            im1 = ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.6)
+            plt.colorbar(im1, ax=ax)
         ax.plot(start_pos[0], start_pos[1], 'go', markersize=10, label='Start')
         ax.plot(goal_pos[0], goal_pos[1], 'ro', markersize=10, label='Goal')
-        ax.set_title('Social Cost Map')
+        ax.set_title('Obstacle + Social Cost Map')
         ax.legend()
         ax.grid(True, alpha=0.3)
-        plt.colorbar(im1, ax=ax)
         
         # 2. CGIP A* 경로 (비교용)
         ax = axes[0, 1]
-        ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.7)
+        ax.imshow(self.simulator.grid, cmap='gray', origin='lower', extent=[-6, 6, -6, 6], alpha=0.8)
+        if cost_map.max() > 0:
+            ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.4)
         
         astar_path = self.simulator.a_star(start_pos, goal_pos)
         if astar_path:
@@ -236,7 +241,9 @@ class CDIFVisualizer:
         
         # 3. CDIF 생성 웨이포인트
         ax = axes[0, 2]
-        ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.7)
+        ax.imshow(self.simulator.grid, cmap='gray', origin='lower', extent=[-6, 6, -6, 6], alpha=0.8)
+        if cost_map.max() > 0:
+            ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.4)
         
         waypoints, num_waypoints = inference.generate_waypoints(cost_map, start_pos, goal_pos)
         
@@ -281,7 +288,9 @@ class CDIFVisualizer:
         
         # 5. A* 연결 확인
         ax = axes[1, 1]
-        ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.7)
+        ax.imshow(self.simulator.grid, cmap='gray', origin='lower', extent=[-6, 6, -6, 6], alpha=0.8)
+        if cost_map.max() > 0:
+            ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.4)
         
         # 각 웨이포인트 간 A* 경로 확인
         all_connected = True
