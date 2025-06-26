@@ -30,7 +30,7 @@ from tqdm import tqdm
 
 # 프로젝트 모듈
 from cdif_model import CDIFModel, DDPMScheduler
-from robot_simulator_cgip import RobotSimulatorCGIP
+from robot_simulator_cgip import RobotSimulator
 
 @dataclass
 class CDIFConfig:
@@ -75,7 +75,7 @@ class StrategicWaypointExtractor:
         """병목지점 기반 전략적 웨이포인트 추출"""
         
         # 1. A* 기본 경로 생성
-        simulator = RobotSimulatorCGIP('scenarios/Circulation1.xml')
+        simulator = RobotSimulator('scenarios/Circulation1.xml')
         astar_path = simulator.fallback_astar_planning(start_pos, goal_pos)
         
         if not astar_path or len(astar_path) < 2:
@@ -148,7 +148,7 @@ class CDIFDataCollector:
         self.output_dir.mkdir(exist_ok=True)
         
         # 시뮬레이터 초기화
-        self.simulator = RobotSimulatorCGIP('scenarios/Circulation1.xml')
+        self.simulator = RobotSimulator('scenarios/Circulation1.xml')
         self.extractor = StrategicWaypointExtractor()
         
     def collect_data(self) -> List[Dict]:

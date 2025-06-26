@@ -28,7 +28,7 @@ from tqdm import tqdm
 # 프로젝트 모듈
 from cdif_model import CDIFModel, DDPMScheduler
 from train_cdif import CDIFConfig
-from robot_simulator_cgip import RobotSimulatorCGIP
+from robot_simulator_cgip import RobotSimulator
 
 class CDIFInference:
     """CDIF 추론기"""
@@ -121,7 +121,7 @@ class CDIFValidator:
     """CDIF 검증기"""
     
     def __init__(self, scenario_file='scenarios/Circulation1.xml'):
-        self.simulator = RobotSimulatorCGIP(scenario_file)
+        self.simulator = RobotSimulator(scenario_file)
         self.grid_size = 0.2
         
     def validate_waypoints(self, waypoints: np.ndarray) -> Dict[str, bool]:
@@ -193,7 +193,7 @@ class CDIFVisualizer:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         
-        self.simulator = RobotSimulatorCGIP('scenarios/Circulation1.xml')
+        self.simulator = RobotSimulator('scenarios/Circulation1.xml')
         
     def visualize_generation_process(self, 
                                    cost_map: np.ndarray,
