@@ -109,11 +109,11 @@ class CDIFDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.samples[idx]
         
-        # 데이터 로드
-        cost_map = torch.from_numpy(sample['cost_map']).float().unsqueeze(0)  # [1, 60, 60]
-        start_pos = torch.from_numpy(sample['start_pos']).float()  # [2]
-        goal_pos = torch.from_numpy(sample['goal_pos']).float()  # [2]
-        waypoints = sample['strategic_waypoints']  # List of [x, y]
+        # 데이터 로드 (JSON에서 로드된 리스트를 NumPy로 변환)
+        cost_map = torch.from_numpy(np.array(sample['cost_map'])).float().unsqueeze(0)  # [1, 60, 60]
+        start_pos = torch.from_numpy(np.array(sample['start_pos'])).float()  # [2]
+        goal_pos = torch.from_numpy(np.array(sample['goal_pos'])).float()  # [2]
+        waypoints = np.array(sample['strategic_waypoints'])  # Convert to numpy array
         
         # 웨이포인트를 고정 길이로 패딩
         max_waypoints = self.config.max_waypoints
@@ -125,10 +125,12 @@ class CDIFDataset(Dataset):
             num_waypoints = max_waypoints
         else:
             # 부족하면 마지막 점으로 패딩
-            while len(waypoints) < max_waypoints:
-                waypoints.append(waypoints[-1])
+            waypoints_padded = waypoints.tolist()
+            while len(waypoints_padded) < max_waypoints:
+                waypoints_padded.append(waypoints_padded[-1])
+            waypoints = np.array(waypoints_padded)
         
-        waypoints_tensor = torch.from_numpy(np.array(waypoints)).float()  # [max_waypoints, 2]
+        waypoints_tensor = torch.from_numpy(waypoints).float()  # [max_waypoints, 2]
         num_waypoints_tensor = torch.tensor(num_waypoints, dtype=torch.long)
         
         return {
