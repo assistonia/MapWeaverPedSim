@@ -15,6 +15,10 @@ import json
 from tqdm import tqdm
 import time
 
+# CUDA 멀티프로세싱 문제 해결
+if __name__ == "__main__":
+    mp.set_start_method('spawn', force=True)
+
 from robot_simuator_dippeR import DiPPeR, RobotSimulatorDiPPeR
 
 def collect_single_episode(args):
@@ -22,7 +26,8 @@ def collect_single_episode(args):
     xml_file, episode_id, episodes_per_process = args
     
     try:
-        # 각 프로세스마다 별도 시뮬레이터 생성
+        # 각 프로세스마다 별도 시뮬레이터 생성 (CPU만 사용)
+        os.environ['CUDA_VISIBLE_DEVICES'] = ''  # 자식 프로세스에서 GPU 사용 금지
         simulator = RobotSimulatorDiPPeR(xml_file, model_path=None)
         simulator.use_dipperp = False  # A* 폴백만 사용
         
@@ -127,7 +132,7 @@ def collect_parallel_data(xml_file, total_episodes=2000, num_processes=8):
     
     all_data = []
     
-    # 병렬 실행
+    # 병렬 실행 (spawn 방식)
     with ProcessPoolExecutor(max_workers=num_processes) as executor:
         # 작업 제출
         futures = [executor.submit(collect_single_episode, args) 
@@ -247,7 +252,8 @@ def main():
     collect_time = time.time() - start_time
     
     print(f"⏱️ 데이터 수집 시간: {collect_time:.1f}초")
-    print(f"📊 초당 {len(data_list)/collect_time:.1f}개 데이터 수집")
+    if len(data_list) > 0:
+        print(f"📊 초당 {len(data_list)/collect_time:.1f}개 데이터 수집")
     
     if len(data_list) == 0:
         print("❌ 수집된 데이터가 없습니다!")
