@@ -76,7 +76,7 @@ class StrategicWaypointExtractor:
         
         # 1. A* 기본 경로 생성
         simulator = RobotSimulator('scenarios/Circulation1.xml')
-        astar_path = simulator.fallback_astar_planning(start_pos, goal_pos)
+        astar_path = simulator.a_star(start_pos, goal_pos)
         
         if not astar_path or len(astar_path) < 2:
             return [start_pos, goal_pos]
@@ -219,7 +219,12 @@ class CDIFDataCollector:
             x = random.uniform(zone[0], zone[2])
             y = random.uniform(zone[1], zone[3])
             
-            if self.simulator.is_position_safe([x, y]):
+            # 그리드 기반 안전성 체크
+            x_idx = int((x + 6) / self.simulator.grid_size)
+            y_idx = int((y + 6) / self.simulator.grid_size)
+            
+            if (0 <= x_idx < 60 and 0 <= y_idx < 60 and 
+                self.simulator.grid[y_idx, x_idx] == 0):
                 return [x, y]
         
         return None

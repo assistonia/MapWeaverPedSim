@@ -136,13 +136,15 @@ class CDIFValidator:
         
         # 1. 각 웨이포인트 안전성 체크
         for i, waypoint in enumerate(waypoints):
-            if not self.simulator.is_position_safe(waypoint):
+            # 그리드 기반 안전성 체크
+            x_idx = int((waypoint[0] + 6) / self.grid_size)
+            y_idx = int((waypoint[1] + 6) / self.grid_size)
+            
+            if not (0 <= x_idx < 60 and 0 <= y_idx < 60 and 
+                    self.simulator.grid[y_idx, x_idx] == 0):
                 results['all_safe'] = False
                 
                 # 장애물 유형 확인
-                x_idx = int((waypoint[0] + 6) / self.grid_size)
-                y_idx = int((waypoint[1] + 6) / self.grid_size)
-                
                 if 0 <= x_idx < 60 and 0 <= y_idx < 60:
                     if self.simulator.grid[y_idx, x_idx] == 1:  # 벽
                         results['wall_collision'] = True
@@ -154,7 +156,7 @@ class CDIFValidator:
             start = waypoints[i]
             goal = waypoints[i + 1]
             
-            path = self.simulator.fallback_astar_planning(start, goal)
+            path = self.simulator.a_star(start, goal)
             if not path:
                 results['connectivity'] = False
                 results['path_exists'] = False
@@ -220,7 +222,7 @@ class CDIFVisualizer:
         ax = axes[0, 1]
         ax.imshow(cost_map, cmap='viridis', origin='lower', extent=[-6, 6, -6, 6], alpha=0.7)
         
-        astar_path = self.simulator.fallback_astar_planning(start_pos, goal_pos)
+        astar_path = self.simulator.a_star(start_pos, goal_pos)
         if astar_path:
             path_x = [p[0] for p in astar_path]
             path_y = [p[1] for p in astar_path]
@@ -286,7 +288,7 @@ class CDIFVisualizer:
         for i in range(len(waypoints) - 1):
             start = waypoints[i]
             goal = waypoints[i + 1]
-            path = self.simulator.fallback_astar_planning(start, goal)
+            path = self.simulator.a_star(start, goal)
             
             if path:
                 path_x = [p[0] for p in path]
@@ -403,7 +405,7 @@ CDIF Validation Results:
             results_summary['avg_waypoints'] += num_waypoints
             
             # 효율성 계산
-            astar_path = self.simulator.fallback_astar_planning(start_pos, goal_pos)
+            astar_path = self.simulator.a_star(start_pos, goal_pos)
             if astar_path and num_waypoints > 0:
                 efficiency = len(astar_path) / num_waypoints
                 results_summary['efficiency_scores'].append(efficiency)
@@ -447,7 +449,12 @@ CDIF Validation Results:
             x = random.uniform(zone[0], zone[2])
             y = random.uniform(zone[1], zone[3])
             
-            if self.simulator.is_position_safe([x, y]):
+            # 그리드 기반 안전성 체크
+            x_idx = int((x + 6) / self.simulator.grid_size)
+            y_idx = int((y + 6) / self.simulator.grid_size)
+            
+            if (0 <= x_idx < 60 and 0 <= y_idx < 60 and 
+                self.simulator.grid[y_idx, x_idx] == 0):
                 return [x, y]
         
         return None
